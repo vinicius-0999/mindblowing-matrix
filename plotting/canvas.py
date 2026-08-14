@@ -93,6 +93,16 @@ class MatrixCanvas(FigureCanvasQTAgg):
         if real_eigen:
             ax.legend(loc="upper left", fontsize=8)
 
+    def _draw_base_vectors(self, ax, M):
+        e1, e2 = base_vectors()
+        t_e1 = M @ e1
+        t_e2 = M @ e2
+        ax.annotate("", xy=t_e1, xytext=(0, 0),
+                    arrowprops=dict(arrowstyle="->", color="#c44e52", lw=2), zorder=4)
+        ax.annotate("", xy=t_e2, xytext=(0, 0),
+                    arrowprops=dict(arrowstyle="->", color="#55a868", lw=2), zorder=4)
+        return t_e1, t_e2
+
     def _finish_axes(self, ax, limit):
         ax.set_xlim(-limit, limit)
         ax.set_ylim(-limit, limit)
@@ -102,8 +112,7 @@ class MatrixCanvas(FigureCanvasQTAgg):
 
     def _draw_full(self, ax, M, square, t_square):
         e1, e2 = base_vectors()
-        t_e1 = M @ e1
-        t_e2 = M @ e2
+        t_e1, t_e2 = M @ e1, M @ e2
 
         _, real_eigen = compute_eigen(M)
         max_extent = BASE_EXTENT
@@ -122,17 +131,13 @@ class MatrixCanvas(FigureCanvasQTAgg):
         ax.fill(t_square[:, 0], t_square[:, 1], color="#4c72b0", alpha=0.2, zorder=2)
         ax.plot(t_square[:, 0], t_square[:, 1], color="#4c72b0", linewidth=1.2, zorder=2)
 
-        ax.annotate("", xy=t_e1, xytext=(0, 0),
-                    arrowprops=dict(arrowstyle="->", color="#c44e52", lw=2), zorder=4)
-        ax.annotate("", xy=t_e2, xytext=(0, 0),
-                    arrowprops=dict(arrowstyle="->", color="#55a868", lw=2), zorder=4)
-
+        self._draw_base_vectors(ax, M)
         self._draw_eigenvectors(ax, M, limit)
         self._finish_axes(ax, limit)
 
     def _draw_focus(self, ax, M, square, t_square):
-        # grade, eixos e viewport fixos (exceto zoom manual) — só o quadrado sombreado
-        # e os autovetores mudam, pra isolar visualmente o efeito da matriz
+        # grade, eixos e viewport fixos (exceto zoom manual) — só o quadrado sombreado,
+        # os vetores da base e os autovetores mudam, pra isolar visualmente o efeito da matriz
         limit = FOCUS_BASE_LIMIT * self.zoom_scale
 
         self._draw_grid(ax, limit)
@@ -141,6 +146,7 @@ class MatrixCanvas(FigureCanvasQTAgg):
         ax.fill(t_square[:, 0], t_square[:, 1], color="#4c72b0", alpha=0.35, zorder=2)
         ax.plot(t_square[:, 0], t_square[:, 1], color="#4c72b0", linewidth=2, zorder=3)
 
+        self._draw_base_vectors(ax, M)
         self._draw_eigenvectors(ax, M, limit)
         self._finish_axes(ax, limit)
 
