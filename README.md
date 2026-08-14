@@ -6,12 +6,24 @@ da base e os autovetores/autovalores.
 
 ## Rodando
 
+### Com Python instalado
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
+
+### Com Docker Desktop (sem Python na máquina)
+
+```bash
+docker compose up --build
+```
+
+Abra `http://localhost:6080/vnc.html?autoconnect=true&resize=scale` no navegador — o
+container roda um display virtual (Xvfb) + noVNC, então a janela do app aparece na aba
+do navegador, sem precisar de servidor X no host. Funciona igual em Mac/Windows/Linux.
 
 ## Estrutura
 

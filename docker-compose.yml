@@ -1,0 +1,5 @@
+services:
+  matriz-visual:
+    build: .
+    ports:
+      - "6080:6080"
