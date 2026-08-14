@@ -25,6 +25,20 @@ Abra `http://localhost:6080/vnc.html?autoconnect=true&resize=scale` no navegador
 container roda um display virtual (Xvfb) + noVNC, então a janela do app aparece na aba
 do navegador, sem precisar de servidor X no host. Funciona igual em Mac/Windows/Linux.
 
+### Rodando na nuvem (Railway), sem expor na internet
+
+O serviço `matriz-visual` já está deployado no projeto Railway `autonomous-agents`
+(rede privada, **sem domínio público** — não é alcançável da internet). Acesso é só
+via túnel SSH até o sandbox (que está na mesma rede privada):
+
+```bash
+ssh -L 6080:matriz-visual.railway.internal:6080 dev@sakura.proxy.rlwy.net -p 34783
+```
+
+Com o túnel de pé, abra `http://localhost:6080/vnc.html?autoconnect=true&resize=scale`
+no navegador local. Deploy de código novo não é automático (serviço criado via API não
+ganha o webhook do GitHub) — precisa disparar manualmente.
+
 ## Estrutura
 
 - `core/` — álgebra linear pura (numpy), sem dependência de UI
