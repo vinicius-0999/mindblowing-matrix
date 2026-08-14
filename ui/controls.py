@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDoubleSpinBox,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QPushButton,
     QVBoxLayout,
@@ -27,6 +28,9 @@ class MatrixControls(QWidget):
     matrixChanged = Signal(np.ndarray)
     animateRequested = Signal(np.ndarray)
     focusModeChanged = Signal(bool)
+    zoomInRequested = Signal()
+    zoomOutRequested = Signal()
+    zoomResetRequested = Signal()
 
     def __init__(self):
         super().__init__()
@@ -65,10 +69,23 @@ class MatrixControls(QWidget):
 
         self.focus_checkbox = QCheckBox("Modo foco: só o quadrado")
         self.focus_checkbox.setToolTip(
-            "Grade, eixos e zoom fixos — só o quadrado sombreado muda com a matriz"
+            "Grade e eixos fixos — só o quadrado sombreado e os autovetores mudam com a matriz"
         )
         self.focus_checkbox.toggled.connect(self.focusModeChanged.emit)
         layout.addWidget(self.focus_checkbox)
+
+        layout.addWidget(QLabel("Zoom"))
+        zoom_row = QHBoxLayout()
+        zoom_out_btn = QPushButton("−")
+        zoom_out_btn.clicked.connect(self.zoomOutRequested.emit)
+        zoom_reset_btn = QPushButton("Reset")
+        zoom_reset_btn.clicked.connect(self.zoomResetRequested.emit)
+        zoom_in_btn = QPushButton("+")
+        zoom_in_btn.clicked.connect(self.zoomInRequested.emit)
+        zoom_row.addWidget(zoom_out_btn)
+        zoom_row.addWidget(zoom_reset_btn)
+        zoom_row.addWidget(zoom_in_btn)
+        layout.addLayout(zoom_row)
 
         layout.addStretch()
 
