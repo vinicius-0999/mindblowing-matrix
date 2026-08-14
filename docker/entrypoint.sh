@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+rm -f "/tmp/.X${DISPLAY#:}-lock"
 Xvfb "$DISPLAY" -screen 0 1280x800x24 -ac &
 XVFB_PID=$!
 sleep 1
