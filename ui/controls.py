@@ -1,6 +1,7 @@
 import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QGridLayout,
@@ -25,6 +26,7 @@ PRESETS = {
 class MatrixControls(QWidget):
     matrixChanged = Signal(np.ndarray)
     animateRequested = Signal(np.ndarray)
+    focusModeChanged = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -60,6 +62,13 @@ class MatrixControls(QWidget):
         animate_btn = QPushButton("Animar (identidade → matriz atual)")
         animate_btn.clicked.connect(lambda: self.animateRequested.emit(self.current_matrix()))
         layout.addWidget(animate_btn)
+
+        self.focus_checkbox = QCheckBox("Modo foco: só o quadrado")
+        self.focus_checkbox.setToolTip(
+            "Grade, eixos e zoom fixos — só o quadrado sombreado muda com a matriz"
+        )
+        self.focus_checkbox.toggled.connect(self.focusModeChanged.emit)
+        layout.addWidget(self.focus_checkbox)
 
         layout.addStretch()
 

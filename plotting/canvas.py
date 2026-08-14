@@ -7,6 +7,9 @@ from core.grid import base_vectors, grid_lines, unit_square
 from core.transform import apply_matrix, apply_matrix_lines
 
 GRID_EXTENT = 3
+# viewport fixo do modo foco — prioriza clareza no caso comum; matrizes muito extremas
+# (entradas perto do limite dos spinboxes) podem levar o quadrado pra fora da borda
+FOCUS_LIMIT = 5
 
 
 class MatrixCanvas(FigureCanvasQTAgg):
@@ -14,18 +17,39 @@ class MatrixCanvas(FigureCanvasQTAgg):
         self.fig = Figure(figsize=(6, 6))
         super().__init__(self.fig)
         self.ax = self.fig.add_subplot(111)
-        self.set_matrix(np.eye(2))
+        self.focus_mode = False
+        self.last_matrix = np.eye(2)
+        self.set_matrix(self.last_matrix)
+
+    def set_focus_mode(self, enabled):
+        self.focus_mode = enabled
+        self.set_matrix(self.last_matrix)
 
     def set_matrix(self, M):
         M = np.asarray(M, dtype=float)
+        self.last_matrix = M
         ax = self.ax
         ax.clear()
 
-        lines = grid_lines(GRID_EXTENT)
         square = unit_square()
+        t_square = apply_matrix(M, square)
+
+        if self.focus_mode:
+            self._draw_focus(ax, M, square, t_square)
+        else:
+            self._draw_full(ax, M, square, t_square)
+
+        eigenvalues, _ = compute_eigen(M)
+        eig_txt = ", ".join(self._format_eigenvalue(v) for v in eigenvalues)
+        info = f"det = {determinant(M):.2f}   tr = {trace(M):.2f}\nautovalores: {eig_txt}"
+        ax.set_title(info, fontsize=9, loc="left")
+
+        self.draw()
+
+    def _draw_full(self, ax, M, square, t_square):
+        lines = grid_lines(GRID_EXTENT)
         e1, e2 = base_vectors()
         t_lines = apply_matrix_lines(M, lines)
-        t_square = apply_matrix(M, square)
         t_e1 = M @ e1
         t_e2 = M @ e2
 
@@ -62,12 +86,22 @@ class MatrixCanvas(FigureCanvasQTAgg):
         if real_eigen:
             ax.legend(loc="upper left", fontsize=8)
 
-        eigenvalues, _ = compute_eigen(M)
-        eig_txt = ", ".join(self._format_eigenvalue(v) for v in eigenvalues)
-        info = f"det = {determinant(M):.2f}   tr = {trace(M):.2f}\nautovalores: {eig_txt}"
-        ax.set_title(info, fontsize=9, loc="left")
+    def _draw_focus(self, ax, M, square, t_square):
+        # grade, eixos e viewport FIXOS — só o quadrado sombreado muda, pra isolar
+        # visualmente o efeito da transformação sem nada mais competindo com ele
+        lines = grid_lines(GRID_EXTENT)
+        for line in lines:
+            ax.plot(line[:, 0], line[:, 1], color="#cccccc", linewidth=0.6, linestyle="--", zorder=1)
+        ax.plot(square[:, 0], square[:, 1], color="#999999", linewidth=1.2, linestyle=":", zorder=1)
 
-        self.draw()
+        ax.fill(t_square[:, 0], t_square[:, 1], color="#4c72b0", alpha=0.35, zorder=2)
+        ax.plot(t_square[:, 0], t_square[:, 1], color="#4c72b0", linewidth=2, zorder=3)
+
+        ax.set_xlim(-FOCUS_LIMIT, FOCUS_LIMIT)
+        ax.set_ylim(-FOCUS_LIMIT, FOCUS_LIMIT)
+        ax.set_aspect("equal")
+        ax.axhline(0, color="black", linewidth=0.5)
+        ax.axvline(0, color="black", linewidth=0.5)
 
     @staticmethod
     def _format_eigenvalue(v):

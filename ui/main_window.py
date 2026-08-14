@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
 
         self.controls.matrixChanged.connect(self.canvas.set_matrix)
         self.controls.animateRequested.connect(self.animator.animate_to)
+        self.controls.focusModeChanged.connect(self.canvas.set_focus_mode)
 
         central = QWidget()
         layout = QHBoxLayout(central)
